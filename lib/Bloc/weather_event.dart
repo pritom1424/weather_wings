@@ -7,3 +7,8 @@ class FetchWeatherEvent extends WeatherEvent {
 
   FetchWeatherEvent(this.pos);
 }
+
+class FetchForecastEvent extends WeatherEvent {
+  final Position pos;
+  FetchForecastEvent(this.pos);
+}

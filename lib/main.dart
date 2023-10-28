@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:weather_wings/Bloc/weather_bloc.dart';
 import 'package:weather_wings/Bloc/weather_event.dart';
+import 'package:weather_wings/screens/detail_forecast_screen.dart';
 import 'package:weather_wings/screens/footerwidget.dart';
 import 'package:weather_wings/screens/home_screen.dart';
 import 'package:geolocator/geolocator.dart';
@@ -75,12 +76,20 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text(
-          widget.title,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.sunny,
+              color: Colors.yellow,
+            ),
+            Text(
+              widget.title,
+              style: const TextStyle(
+                  fontWeight: FontWeight.normal,
+                  color: Colors.white,
+                  fontFamily: 'PoetsenOne'),
+            ),
+          ],
         ),
         backgroundColor: Colors.transparent,
       ),
@@ -134,6 +143,24 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        elevation: 10,
+        backgroundColor: Color.fromARGB(255, 16, 70, 99),
+        tooltip: "Weather forecast details",
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) => DetailedForecastScreen(_determinePosition())));
+        },
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: Icon(
+            Icons.cloud,
+            color: Colors.white,
+            size: 35,
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.miniEndTop,
       bottomNavigationBar: FooterWidget(),
     );
   }

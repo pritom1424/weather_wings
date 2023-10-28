@@ -12,10 +12,28 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
         WeatherFactory wf = WeatherFactory(apikey, language: Language.ENGLISH);
         Weather currWeather = await wf.currentWeatherByLocation(
             event.pos.latitude, event.pos.longitude);
+
+        print(currWeather);
         emit(WeatherSuccessState(currWeather));
       } catch (e) {
         emit(WeatherFailureState());
       }
     });
+
+    on<FetchForecastEvent>(
+      (event, emit) async {
+        emit(WeatherLoadingState());
+        try {
+          WeatherFactory wf =
+              WeatherFactory(apikey, language: Language.ENGLISH);
+          List<Weather> weathers = await wf.fiveDayForecastByLocation(
+              event.pos.latitude, event.pos.longitude);
+
+          emit(WeatherForecastSuccessState(weathers));
+        } catch (e) {
+          emit(WeatherFailureState());
+        }
+      },
+    );
   }
 }

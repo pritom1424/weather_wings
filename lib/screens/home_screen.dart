@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -34,6 +36,143 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
+  String GreetingsAccordingToTime(DateTime dt) {
+    double dateNumber = dt.hour + (dt.minute / 60);
+
+    switch (dateNumber) {
+      case >= 5 && < (11 + (59 / 60)):
+        return "Morning";
+      case >= 12 && < (16 + (59 / 60)):
+        return "Afternoon";
+      case >= 17 || < 4:
+        return "Evening";
+
+      default:
+        return "Morning";
+    }
+  }
+
+  void popAdditionalInfo(BuildContext ctx, String windspeed, double windDegree,
+      String fTemp, Size scSize) {
+    showModalBottomSheet(
+        context: ctx,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(50), topRight: Radius.circular(50)),
+        ),
+        builder: (ctx) => SingleChildScrollView(
+              child: Container(
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                    gradient:
+                        LinearGradient(colors: [Colors.blue, Colors.green])),
+                child: Column(
+                  children: [
+                    FittedBox(
+                      child: Text(
+                        "Additional Info",
+                        style: TextStyle(
+                            fontSize: 35,
+                            color: Colors.white,
+                            fontFamily: "PoetsenOne"),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            FittedBox(
+                              child: Text(
+                                "Wind",
+                                style: TextStyle(
+                                    fontSize: 35,
+                                    color: Colors.white,
+                                    fontFamily: 'Dortmund'),
+                              ),
+                            ),
+                            FittedBox(
+                              child: Text(
+                                "-Wind Speed:$windspeed m/s",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 18),
+                              ),
+                            ),
+                            FittedBox(
+                              child: Text(
+                                "-Wind Direction:$windDegree°",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.normal,
+                                    fontSize: 18),
+                              ),
+                            ),
+                          ],
+                        ),
+                        CircleAvatar(
+                          backgroundColor: Color.fromARGB(255, 76, 216, 209),
+                          radius: scSize.height * 0.08,
+                          child: Stack(children: [
+                            Align(
+                                alignment: Alignment.center,
+                                child: Image.asset(
+                                    "assets/weather_images/compass_frame.png")),
+                            Transform.rotate(
+                              angle: windDegree * pi / 180,
+                              origin: Offset(0, 0),
+                              child: Align(
+                                alignment: AlignmentDirectional(0, 0),
+                                child: Icon(
+                                  Icons.navigation_sharp,
+                                  color: Color.fromARGB(255, 223, 232, 223),
+                                  size: scSize.height * 0.04,
+                                ),
+                              ),
+                            ),
+                          ]),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Align(
+                      alignment: Alignment.center,
+                      child: FittedBox(
+                          child: Text(
+                        "Real Feel:$fTemp °C",
+                        style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.normal,
+                            color: Colors.white,
+                            fontFamily: "PoetsenOne"),
+                      )),
+                    ),
+                    ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 33, 226, 243)),
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                        },
+                        child: Text(
+                          "Close",
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                        ))
+                  ],
+                ),
+              ),
+            ));
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
@@ -58,14 +197,16 @@ class HomeScreen extends StatelessWidget {
                               color: Colors.red,
                             ),
                             SizedBox(
-                              width: 8,
+                              width: 2,
                             ),
                             FittedBox(
-                              child: Text(state.weather.areaName!,
+                              child: Text(
+                                  "${state.weather.areaName!} - ${DateFormat().add_jm().format(state.weather.date!)}",
                                   style: const TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w300,
-                                      color: Colors.white)),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.normal,
+                                    color: Colors.white,
+                                  )),
                             ),
                           ],
                         ),
@@ -75,12 +216,13 @@ class HomeScreen extends StatelessWidget {
                         Row(
                           children: [
                             FittedBox(
-                              child: const Text(
-                                "Good Morning!",
+                              child: Text(
+                                "Good ${GreetingsAccordingToTime(state.weather.date!)}!",
                                 style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white),
+                                  fontSize: 25,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -89,17 +231,42 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                   Flexible(
-                    flex: 3,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: FadeInImage(
-                        placeholder: const AssetImage(
-                            "assets/weather_images/loading.png"),
-                        image: weatherConditionDetector(
-                                state.weather.weatherConditionCode!)
-                            .image,
+                    flex: 4,
+                    fit: FlexFit.loose,
+                    child: ListView(children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: FadeInImage(
+                          height: screenSize.height * 0.25,
+                          fit: BoxFit.cover,
+                          placeholder: const AssetImage(
+                              "assets/weather_images/loading.png"),
+                          image: weatherConditionDetector(
+                                  state.weather.weatherConditionCode!)
+                              .image,
+                        ),
                       ),
-                    ),
+                      Align(
+                          alignment: Alignment.center,
+                          child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent),
+                              onPressed: () {
+                                popAdditionalInfo(
+                                    context,
+                                    state.weather.windSpeed.toString(),
+                                    state.weather.windDegree!,
+                                    state.weather.tempFeelsLike!.celsius!
+                                        .round()
+                                        .toStringAsFixed(1),
+                                    screenSize);
+                              },
+                              child: Text(
+                                'additional info',
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              )))
+                    ]),
                   ),
                   //second part
                   Flexible(
@@ -110,11 +277,12 @@ class HomeScreen extends StatelessWidget {
                         Center(
                           child: FittedBox(
                             child: Text(
-                              "${state.weather.temperature!.celsius!.round().toStringAsFixed(1)}°C",
+                              "${state.weather.temperature!.celsius!.toStringAsFixed(1)}°C",
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 45,
-                                  fontWeight: FontWeight.w600),
+                                  fontWeight: FontWeight.w600,
+                                  fontFamily: "Dortmund"),
                             ),
                           ),
                         ),
@@ -125,7 +293,8 @@ class HomeScreen extends StatelessWidget {
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 25,
-                                  fontWeight: FontWeight.w500),
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'Roboto'),
                             ),
                           ),
                         ),
@@ -136,7 +305,8 @@ class HomeScreen extends StatelessWidget {
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 20,
-                                  fontWeight: FontWeight.w300),
+                                  fontWeight: FontWeight.w300,
+                                  fontFamily: 'Roboto'),
                             ),
                           ),
                         ),

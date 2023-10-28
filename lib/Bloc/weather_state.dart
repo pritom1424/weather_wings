@@ -11,4 +11,9 @@ class WeatherSuccessState extends WeatherState {
   WeatherSuccessState(this.weather);
 }
 
+class WeatherForecastSuccessState extends WeatherState {
+  final List<Weather> weathers;
+  WeatherForecastSuccessState(this.weathers);
+}
+
 class WeatherFailureState extends WeatherState {}
